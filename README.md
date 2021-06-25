@@ -18,69 +18,113 @@
 ## Получение информации о трек-номере
 
 ## Получение сроков доставки
+```php
 // Получение кода города по названию города и области
-$sender_city
+$sender_city = $np->getCity('СПБ', 'СПБ');
+$sender_city_ref = $sender_city['data'][0]['Ref'];
 // Получение кода города по названию города и области
-$recipient_city
+$recipient_city = $np->getCity('Москва', 'Московская');
+$recipient_city_ref = $recipient_city['data'][0]['Ref'];
 // Дата отправки груза
+$date = date('d.m.Y');
 // Получение ориентировочной даты прибытия груза между складами в разных городах
+```
 ## Получение стоимости доставки
+```php
 // Получение кода города по названию города и области
+$sender_city = $np->getCity('СПБ', 'СПБ');
+$sender_city_ref = $sender_city['data'][0]['Ref'];
 // Получение кода города по названию города и области
+$recipient_city = $np->getCity('МСК', 'МСК');
+$recipient_city_ref = $recipient_city['data'][0]['Ref'];
 // Вес товара
-// Цена в руб
+$weight = 7;
+// Цена в грн
+$price = 1000;
 // Получение стоимости доставки груза с указанным весом и стоимостью между складами в разных городах 
+```
 ## Генерирование новой электронной накладной
+```php
 // Перед генерированием ЭН необходимо получить данные отправителя
 // Получение всех отправителей
+$senderInfo = $np->getCounterparties('Sender', 1, '', '');
 // Выбор отправителя в конкретном городе (в данном случае - в первом попавшемся)
+$sender = $senderInfo['data'][0];
 // Информация о складе отправителя
+$senderWarehouses = $np->getWarehouses($sender['City']);
 // Генерирование новой накладной
+$result = $np->newInternetDocument(
     // Данные отправителя
+    array(
         // Данные пользователя
-        FirstName
-        MiddleName
-        LastName
+        'FirstName' => $sender['FirstName'],
+        'MiddleName' => $sender['MiddleName'],
+        'LastName' => $sender['LastName'],
         // Вместо FirstName, MiddleName, LastName можно ввести зарегистрированные ФИО отправителя или название фирмы для юрлиц
         // (можно получить, вызвав метод getCounterparties('Sender', 1, '', ''))
-        // 'Description
+        // 'Description' => $sender['Description'],
         // Необязательное поле, в случае отсутствия будет использоваться из данных контакта
-        // 'Phone
+        // 'Phone' => '78096434578',
         // Город отправления
-        // 'City' 
+        // 'City' => 'МСК',
         // Область отправления
-        // 'Region'
-        CitySender
+        // 'Region' => 'МСК',
+        'CitySender' => $sender['City'],
         // Отделение отправления по ID (в данном случае - в первом попавшемся)
-        SenderAddress
+        'SenderAddress' => $senderWarehouses['data'][0]['Ref'],
         // Отделение отправления по адресу
-        // 'Warehouse'
-        
-        // Данные получателя (новый масив)
-            FirstName
-            MiddleName
-            LastName
-            Phone
-            City
-            Region
-            Warehouse
-          // Дата отправления
-          // Тип доставки, дополнительно - getServiceTypes()
-          // Кто оплачивает за доставку
-          // Стоимость груза в грн
-          // Кол-во мест
-          // Описание груза
-          // Тип доставки, дополнительно - getCargoTypes
-          // Вес груза
-          // Объем груза в куб.м.
-          // Обратная доставка
+        // 'Warehouse' => $senderWarehouses['data'][0]['DescriptionRu'],
+    ),
+    // Данные получателя
+    array(
+        'FirstName' => 'Сидор',
+        'MiddleName' => 'Сидорович',
+        'LastName' => 'Сиродов',
+        'Phone' => '70507944657',
+        'City' => 'МСК',
+        'Region' => 'МСК',
+        'Warehouse' => 'Отделение №4: ул. Ленина, 13',
+    ),
+    array(
+        // Дата отправления
+        'DateTime' => date('d.m.Y'),
+        // Тип доставки, дополнительно - getServiceTypes()
+        'ServiceType' => 'WarehouseWarehouse',
+        // Тип оплаты, дополнительно - getPaymentForms()
+        'PaymentMethod' => 'Cash',
+        // Кто оплачивает за доставку
+        'PayerType' => 'Recipient',
+        // Стоимость груза в грн
+        'Cost' => '500',
+        // Кол-во мест
+        'SeatsAmount' => '1',
+        // Описание груза
+        'Description' => 'Кастрюля',
+        // Тип доставки, дополнительно - getCargoTypes
+        'CargoType' => 'Cargo',
+        // Вес груза
+        'Weight' => '10',
+        // Объем груза в куб.м.
+        'VolumeGeneral' => '0.5',
+        // Обратная доставка
+        'BackwardDeliveryData' => array(
+            array(
                 // Кто оплачивает обратную доставку
+                'PayerType' => 'Recipient',
                 // Тип доставки
-                // Значение обратной доставки)
-                
+                'CargoType' => 'Money',
+                // Значение обратной доставки
+                'RedeliveryString' => 4552,
+            )
+        )
+    )
+);
+```
 ## Получение складов в определенном городе
+```php
 // В параметрах указывается город и область (для более точного поиска)
-$city
-$result
+$city = $np->getCity('МСК', 'МСК');
+$result = $np->getWarehouses($city['data'][0]['Ref']);
+```
 
-## Вызов произвольного метода
+## Вызовы произвольного метода
